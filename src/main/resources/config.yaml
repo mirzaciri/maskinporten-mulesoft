@@ -1,0 +1,10 @@
+maskinporten:
+  filename: "" #path to the virksomhetssertifikat
+  pwd: "" #password to the certificate
+  alias: "" #alias name on the certificate
+  issuer: ""
+  audience: "https://oidc.difi.no/idporten-oidc-provider/"
+  tokenEndpoint: "https://oidc.difi.no/idporten-oidc-provider/token"
+  scope: "ks:fiks"
+
+  

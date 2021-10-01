@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="458b653c-db18-40ab-8547-89ef927b3224" file="config.yaml" />
+	<flow name="getToken-java-static" doc:id="7c6e32aa-8dad-467f-8c22-092720752093" >
+		<scheduler doc:name="Scheduler" doc:id="44375562-1b38-494b-b44e-22d1dea0902a" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="1" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<java:invoke-static method="getToken(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)" doc:name="Invoke static" doc:id="e1c89c59-bec1-4328-af5e-ea5204e78225" class="org.mycompany.utils.Maskinporten">
+			<java:args ><![CDATA[#[{
+	arg0: p('maskinporten.filename'), 
+	arg1: p('maskinporten.pwd'), 
+	arg2: p('maskinporten.alias'), 
+	arg3: p('maskinporten.issuer'),
+	arg4: p('maskinporten.audience'), 
+	arg5: p('maskinporten.tokenEndpoint'), 
+	arg6: p('maskinporten.scope')
+}]]]></java:args>
+		</java:invoke-static>
+		<logger level="INFO" doc:name="Logger" doc:id="833ec039-922a-475a-82c3-777e2eda6834" message='#["from java module Invoke static: " ++ payload]'/>
+	</flow>
+	<flow name="getToken-transform-message" doc:id="2e750792-e447-4ea6-9d8b-7c173a5fe083" >
+		<scheduler doc:name="Scheduler" doc:id="36f7c3a9-5f6f-41c7-81e9-a753e9f5b140" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="1" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<ee:transform doc:name="Transform Message" doc:id="f5b0466d-d9cf-472c-885c-fa13ef4d755c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import java!org::mycompany::utils::Maskinporten
+output application/json
+---
+{
+	token: Maskinporten::getToken(p('maskinporten.filename'), p('maskinporten.pwd'), p('maskinporten.alias'), p('maskinporten.issuer'), p('maskinporten.audience'), p('maskinporten.tokenEndpoint'), p('maskinporten.scope'))
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f6d2e84b-345d-4287-ace7-90fd20ead82c" message='invoke from transform message'/>
+		<logger level="INFO" doc:name="Logger" doc:id="d7c63f6d-64c7-4add-9a00-702c1e58307e" message="#[payload]"/>
+	</flow>
+</mule>
